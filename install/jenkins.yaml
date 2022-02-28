@@ -184,7 +184,7 @@ controller:
                   github {
                     id('github-12')
                     scanCredentialsId(null)
-                    repoOwner('dcanadillas')
+                    repoOwner('angryluke')
                     repository('hashi-cicd')
                   }
                 }
@@ -200,7 +200,7 @@ controller:
                   github {
                     id('github-22')
                     scanCredentialsId(null)
-                    repoOwner('dcanadillas')
+                    repoOwner('angryluke')
                     repository('hashi-cicd')
                   }
                 }
