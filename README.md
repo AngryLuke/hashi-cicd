@@ -83,7 +83,7 @@ kubectl port-forward svc/jenkins -n jenkins 9090:8080 --address 0.0.0.0
 ## Reach Vault UI
 If you can't expose a `LoadBalancer` service, do a `port-forward` of your Vault service in a different terminal:
 ```bash
-kubectl port-forward svc/jenkins -n jenkins 9091:8200 --address 0.0.0.0
+kubectl port-forward svc/vault -n vault 9200:8200 --address 0.0.0.0
 ```
 
 
