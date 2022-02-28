@@ -39,8 +39,10 @@ kubectl apply -f ./config/jenkins-admin-secret.yaml
 
 #kubectl create ns $TKNS
 
-helm repo add hashicorp https://helm.releases.hashicorp.com  
+helm repo add hashicorp https://helm.releases.hashicorp.com
 helm repo add jenkinsci https://charts.jenkins.io
+# Update repos
+helm repo update
 
 # Installing Vault in Development mode without the Vault Injector
 helm install vault --set injector.enabled=false --set server.dev.enabled=true -n $VAULT_KNS hashicorp/vault

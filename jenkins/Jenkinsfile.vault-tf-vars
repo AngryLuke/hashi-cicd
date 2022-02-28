@@ -25,9 +25,8 @@ pipeline {
     string(name: 'tfepath', defaultValue: 'terraform/creds/tfe-role', description: 'Secrets path for Terraform secrets')
     string(name: 'vaultns', defaultValue: 'root', description: 'Vault Namespace')
     string(name: 'vaultcreds', defaultValue: 'k8s-vaultdemo', description: 'Vault credentials')
-    string(name: 'tfe_wkspc_id', defaultValue: 'ws-id-to-be-defined', description: 'TFC Workspacet')
+    string(name: 'tfe_wkspc_id', defaultValue: 'workspace-id', description: 'TFC Workspacet')
     string(name: 'tfe_varname', defaultValue: 'environment', description: 'Environment variable name')
-    string(name: 'tfe_varname', defaultValue: 'owner', description: 'Owner variable name')
   }
   stages {
     stage ('Variables') {
