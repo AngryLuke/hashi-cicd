@@ -68,10 +68,18 @@ The password for the `admin` account is in `jenkins-admin` K8s secret:
 kubectl get secret -n jenkins jenkins-admin -o go-template='{{ index .data "jenkins-admin-password" }}' | base64 -d
 ```
 
+## Reach Jenkins UI
 If you can't expose a `LoadBalancer` service, do a `port-forward` of your Jenkins service in a different terminal:
 ```bash
 kubectl port-forward svc/jenkins -n jenkins 9090:8080 --address 0.0.0.0
 ```
+
+## Reach Vault UI
+If you can't expose a `LoadBalancer` service, do a `port-forward` of your Vault service in a different terminal:
+```bash
+kubectl port-forward svc/jenkins -n jenkins 9091:8200 --address 0.0.0.0
+```
+
 
 Then you should be able to access Jenkins at [http://localhost:9090](http://localhost:9090)
 
