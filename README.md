@@ -26,7 +26,7 @@ The script is going to ask if you are using the righ K8s context. Press any key 
 > make install
 > ```
 
-Change the values of the static secrets to be used in Vault in the file `install/config/secrets.json`:
+Use the static secrets file as a template `install/config/secrets.json` to create your own and apply your custom values:
 ```json
 {
   "<tfc_var1>": "<value_to_be_set>",
@@ -40,13 +40,19 @@ Change the values of the static secrets to be used in Vault in the file `install
 }
 ```
 
+For example you can copy that file in another folder and write your personal secrets: this new file will be the one you'll
+use in the next step.
+> ```bash
+> cp install/config/secrets.json <your_preferred_path>/<your_secrets_file>.json
+> ```
+
 `<tfc_var1> ... <tfc_varn>` are **existing variable keys in your Terraform Cloud Workspace**
 
 
 Configure Vault with the required secrets and Kubernetes auth:
 
 ```bash
-make configure TFEORG=<your_TFC_organization> TFEUSER=<your_TFC_user>
+make configure TFEORG=<your_TFC_organization> TFEUSER=<your_TFC_user> SECRETSFILE=<your_preferred_path>/<your_secrets_file>.json
 ```
 
 ## Jenkins pipelines integration
