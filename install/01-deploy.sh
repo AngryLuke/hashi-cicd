@@ -47,7 +47,7 @@ export VAULT_SA_NAME="$(kubectl get sa vault -n $VAULT_KNS \
 export SA_JWT_TOKEN="$(kubectl get secret $VAULT_SA_NAME -n $VAULT_KNS \
     --output 'go-template={{ .data.token }}' | base64 --decode)"
 
-export SA_CA_CRT=$(kubectl get secret $VAULT_SA_NAME \
+export SA_CA_CRT=$(kubectl get secret $VAULT_SA_NAME -n $VAULT_KNS \
     -o go-template='{{ index .data "ca.crt" }}' | base64 -d; echo)
 
 export K8S_HOST="$(kubectl exec -ti vault-0 -n vault -- printenv KUBERNETES_SERVICE_HOST | tr -d '\r')"
