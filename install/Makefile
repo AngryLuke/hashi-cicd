@@ -2,7 +2,7 @@ PLATFORM="x86_64"
 OS="linux"
 
 define usage
-	@echo "Usage: make [all|install|configure|tkrun|clean] [TFEORG=<TFC_ORG> [TFEUSER=<YOUR_TFC_USER>]]"
+	@echo "Usage: make [all|install|configure|tkrun|clean] [TFEORG=<TFC_ORG> [TFEUSER=<YOUR_TFC_USER>] [SECRETSFILE=<YOUR_SECRETS_FILE>]]"
 endef
 
 
@@ -15,13 +15,18 @@ install:
 configure:
 ifdef TFEORG
 ifdef TFEUSER
-	./01-deploy.sh $(TFEORG) $(TFEUSER)
+ifdef SECRETSFILE
+	./01-deploy.sh $(TFEORG) $(TFEUSER) $(SECRETSFILE)
 else
 	@echo "There is no Terraform username defined\n"
 	$(call usage)
 endif
 else
 	@echo "There is no Terraform organization in the parameters\n"
+	$(call usage)
+endif
+else
+	@echo "No secrets.json provided in the parameters\n"
 	$(call usage)
 endif
 

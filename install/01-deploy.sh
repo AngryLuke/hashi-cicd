@@ -109,7 +109,7 @@ kubectl exec vault-0 -n $VAULT_KNS -- vault write terraform/config token="$TOKEN
 kubectl exec vault-0 -n $VAULT_KNS -- vault write terraform/role/tfe-role user_id=$TFUSERID ttl=10m
 
 kubectl exec vault-0 -n $VAULT_KNS -- vault secrets enable -version 2 kv
-cat config/secrets.json | kubectl exec vault-0 -n $VAULT_KNS -ti -- vault kv put kv/cicd -
+cat $3 | kubectl exec vault-0 -n $VAULT_KNS -ti -- vault kv put kv/cicd -
 
 
 
