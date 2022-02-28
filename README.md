@@ -55,6 +55,11 @@ Configure Vault with the required secrets and Kubernetes auth:
 make configure TFEORG=<your_TFC_organization> TFEUSER=<your_TFC_user> SECRETSFILE=<your_preferred_path>/<your_secrets_file>.json
 ```
 
+## Check vault version
+```bash
+kubectl exec --stdin=true --tty=true vault-0 -n vault -- vault -version
+```
+
 ## Jenkins pipelines integration
 
 This repo has some Jenkins pipelines examples with Vault integration in the `jenkins` folder. Jenkins deployment with JCasC of this repo configures already a multibranch pipeline using the pipeline as code in `jenkins/Jenkinsfile.valt-tf-vars`.
