@@ -20,15 +20,14 @@ pipeline {
     }
   }
   parameters {
-    //string(name: 'vaulturl', defaultValue: 'http://host.docker.internal:8200', description: 'Vault API URL')
     string(name: 'vaulturl', defaultValue: 'http://vault.vault.svc.cluster.local:8200', description: 'Vault API URL')
     string(name: 'vaultpath', defaultValue: 'kv/cicd', description: 'Secrets path for Vault static secrets')
     string(name: 'tfepath', defaultValue: 'terraform/creds/tfe-role', description: 'Secrets path for Terraform secrets')
     string(name: 'vaultns', defaultValue: 'root', description: 'Vault Namespace')
     string(name: 'vaultcreds', defaultValue: 'k8s-vaultdemo', description: 'Vault credentials')
-    string(name: 'tfe_wkspc_id', defaultValue: 'ws-eAJzKDto569WUEpj', description: 'TFC Workspacet')
-    string(name: 'tfe_varname', defaultValue: 'machine', description: 'Variable name')
-    //string(name: 'tfe_varvalue', defaultValue: 'n2-standard-2', description: 'Machine type value ')
+    string(name: 'tfe_wkspc_id', defaultValue: 'ws-id-to-be-defined', description: 'TFC Workspacet')
+    string(name: 'tfe_varname', defaultValue: 'environment', description: 'Environment variable name')
+    string(name: 'tfe_varname', defaultValue: 'owner', description: 'Owner variable name')
   }
   stages {
     stage ('Variables') {
