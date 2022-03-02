@@ -43,11 +43,13 @@ pipeline {
             path: "${params.tfepath}",
             engineVersion: 1,
             secretValues: [
-              [envVar: "tfe_token", vaultKey: "token"]
+              [envVar: "tfe_token", vaultKey: "token"], 
+              [envVar: "gh_token", vaultKey: "gh_token"], 
+              [envVar: "gh_user", vaultKey: "gh_token"],
             ]
           ]
         ]) {
-          container('curl'){
+          container('curl') {
             echo "${env.tfe_token}"
             sh """
               curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o ./jq-linux64 && chmod 755 ./jq-linux64
@@ -63,6 +65,19 @@ EOF
             """
           }
         }
+      }
+    }
+    stage("Tag and Push") {
+      when { branch 'master' }
+      environment { 
+          GIT_TAG = "jenkins-$BUILD_NUMBER"
+      }
+      steps {
+        sh("""
+            git config user.name ${params.gh_user}
+            git config user.email '${params.gh_user}@hashicorp.com'
+            git tag -a \$GIT_TAG -m "[Jenkins CI] New Tag "
+        """)
       }
     }
     stage ('Terraform') {
