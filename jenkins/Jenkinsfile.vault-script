@@ -1,0 +1,102 @@
+
+pipeline {
+  agent {
+    kubernetes {
+      cloud 'kubernetes'
+      yaml '''
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          labels:
+            agent: jenkins-agent
+        spec:
+          containers:
+          - name: curl
+            image: gcr.io/cloud-builders/curl:latest
+            command:
+            - cat
+            tty: true
+          
+      '''
+    }
+  }
+  parameters {
+    booleanParam defaultValue: true, description: 'Check to update vars', name: 'UPDATE_VARS'
+    string(name: 'vaulturl', defaultValue: 'http://vault-ui.vault.svc.cluster.local:8200', description: 'Vault API URL')
+    string(name: 'vaultpath', defaultValue: 'kv/data/tfevalues', description: 'Secrets path for Vault static secrets')
+    string(name: 'tfepath', defaultValue: 'terraform/creds/dcanadillas-role', description: 'Secrets path for Terraform secrets')
+    string(name: 'vaultns', defaultValue: 'root', description: 'Vault Namespace')
+    string(name: 'vaultcreds', defaultValue: 'kubernetes', description: 'Vault credentials')
+    string(name: 'tfe_wkspc_id', defaultValue: 'ws-eAJzKDto569WUEpj', description: 'TFC Workspace (gcp-basic-demo as default')
+  }
+  stages {
+    stage ('Variables') {
+      when { 
+        expression { 
+          return params.UPDATE_VARS 
+        } 
+      }
+      steps {
+        withCredentials([
+          [
+            $class: 'VaultTokenCredentialBinding', 
+            addrVariable: 'VAULT_ADDR', 
+            credentialsId: "${params.vaultcreds}", 
+            tokenVariable: 'VAULT_TOKEN', 
+            vaultAddr: "${params.vaulturl}"
+          ]
+        ]) {
+          container('curl') {
+            sh """
+              cd /home/jenkins/agent/workspace/HashiCorp_Hashi-CICD_master
+              ls
+              ./jenkins/updatevars.sh ${params.vaultpath} ${params.tfepath} ${params.tfe_wkspc_id} 
+            """
+          }
+        }
+      }
+    }
+    stage ('Terraform') {
+      steps {
+        withVault(configuration: [failIfNotFound: true, timeout: 10, vaultCredentialId: "${params.vaultcreds}", vaultUrl: "${params.vaulturl}"],
+        vaultSecrets: [
+          [
+            path: "${params.vaultpath}", 
+            secretValues: [
+              [envVar: 'tfe_org', vaultKey: 'tfe_org']
+            ]
+          ],
+          [
+            path: "${params.tfepath}",
+            engineVersion: 1,
+            secretValues: [
+              [envVar: "tfe_token", vaultKey: "token"]
+            ]
+          ]
+        ]) {
+          container('curl'){
+            echo "${env.tfe_token}"
+            sh """
+              # curl -H "Authorization: Bearer ${env.tfe_token}" -H "Content-Type: application/vnd.api+json" -X GET "https://app.terraform.io/api/v2/organizations/${env.tfe_org}/workspaces"
+              curl -H "Authorization: Bearer ${env.tfe_token}" -H "Content-Type: application/vnd.api+json" -X POST -d '{"data": {"attributes": {"is-destroy": false,"message": "Jenkins Demo run"},"type":"runs","relationships": {"workspace": {"data": {"type": "workspaces","id": \"${params.tfe_wkspc_id}\"}}}}}' "https://app.terraform.io/api/v2/runs"
+            """
+          }
+        }
+      }
+    }
+    stage ('Show Values') {
+      when { 
+        expression { 
+          return params.UPDATE_VARS 
+        } 
+      }
+      steps {
+        sh """
+          echo "These are the values used for TFC variables:"
+          # curl -H "X-Vault-Token: ${env.VAULT_TOKEN}" -X GET "${env.VAULT_ADDR}/v1/${params.vaultpath}" | ./jq-linux64 -r ".data.data"
+          ./jq-linux64 -r . tfevalues.json
+        """
+      }
+    }
+  }
+}

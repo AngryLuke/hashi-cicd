@@ -205,6 +205,22 @@ controller:
                   }
                 }
               }
+          - script: >
+              multibranchPipelineJob('HashiCorp/vault-binding') {
+                factory {
+                  workflowBranchProjectFactory {
+                    scriptPath('jenkins/Jenkinsfile.vault-script')
+                  }
+                }
+                branchSources {
+                  github {
+                    id('github-32')
+                    scanCredentialsId(null)
+                    repoOwner('dcanadillas')
+                    repository('hashi-cicd')
+                  }
+                }
+              }
     securityRealm: |-
       local:
         allowsSignup: false

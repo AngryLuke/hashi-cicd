@@ -1,0 +1,6 @@
+{
+  "machine": "n2-standard-2",
+  "owner": "admin-user",
+  "gcp_zone": "europe-west1-c",
+  "gcp_project": "mygcptest"
+}

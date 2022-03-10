@@ -36,7 +36,7 @@ echo -e "\nTerraform Cloud Team ID for Owners at organization $1: $TEAMID"
 echo -e "\nTerraform Cloud User ID for user $2: $TFUSERID\n"
 
 # Deploy Vault SA for JWT Token Review, Tekton pipelines service account and Vault Agent ConfigMap
-kubectl apply -f ./config
+kubectl apply -f ./config/jenkins-admin-secret.yaml
 
 #kubectl create sa tekton -n $TKNS
 
@@ -64,6 +64,9 @@ path "kv/cicd" {
   capabilities = ["read", "update", "list"] 
 }
 path "kv/data/cicd" { 
+  capabilities = ["read", "update", "list"] 
+}
+path "kv/data/tfevalues" { 
   capabilities = ["read", "update", "list"] 
 }
 path "terraform/creds/tfe-role" { 
@@ -109,7 +112,8 @@ kubectl exec vault-0 -n $VAULT_KNS -- vault write terraform/config token="$TOKEN
 kubectl exec vault-0 -n $VAULT_KNS -- vault write terraform/role/tfe-role user_id=$TFUSERID ttl=10m
 
 kubectl exec vault-0 -n $VAULT_KNS -- vault secrets enable -version 2 kv
-cat $3 | kubectl exec vault-0 -n $VAULT_KNS -ti -- vault kv put kv/cicd -
+cat config/secrets.json | kubectl exec vault-0 -n $VAULT_KNS -ti -- vault kv put kv/cicd -
+cat config/tfe_values.json | kubectl exec vault-0 -n $VAULT_KNS -ti -- vault kv put kv/tfevalues -
 
 
 

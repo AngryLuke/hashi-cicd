@@ -46,7 +46,21 @@ use in the next step.
 > cp install/config/secrets.json <your_preferred_path>/<your_secrets_file>.json
 > ```
 
+```json
+{
+  "<tfc_var1>": "<value_to_be_set>",
+  "<tfc_var2>": "<value_to_be_set>",
+  "..." : "...",
+  "<tfc_varn>": "<value_to_be_set>"
+}
+```
+
 `<tfc_var1> ... <tfc_varn>` are **existing variable keys in your Terraform Cloud Workspace**
+Also, configure the values of another secret with only the Terraform Cloud variables of your workspace. That is in the file `install/config/tfe_values.json`:
+
+
+`<tfc_var1> ... <tfc_varn>` are **existing variable keys in your Terraform Cloud Workspace**. It they are not existing in the Workspace pipelines will fail.
+
 
 
 Configure Vault with the required secrets and Kubernetes auth:

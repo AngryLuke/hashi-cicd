@@ -1,0 +1,123 @@
+
+pipeline {
+  agent {
+    kubernetes {
+      cloud 'kubernetes'
+      yaml '''
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          labels:
+            agent: jenkins-agent
+        spec:
+          containers:
+          - name: curl
+            image: gcr.io/cloud-builders/curl:latest
+            command:
+            - cat
+            tty: true
+      '''
+    }
+  }
+  parameters {
+    booleanParam defaultValue: true, description: 'Check to update vars', name: 'UPDATE_VARS'
+    string(name: 'vaulturl', defaultValue: 'http://vault-ui.vault.svc.cluster.local:8200', description: 'Vault API URL')
+    string(name: 'vaultpath', defaultValue: 'kv/data/tfevalues', description: 'Secrets path for Vault static secrets')
+    string(name: 'tfepath', defaultValue: 'terraform/creds/dcanadillas-role', description: 'Secrets path for Terraform secrets')
+    string(name: 'vaultns', defaultValue: 'root', description: 'Vault Namespace')
+    string(name: 'vaultcreds', defaultValue: 'kubernetes', description: 'Vault credentials')
+    string(name: 'tfe_wkspc_id', defaultValue: 'ws-eAJzKDto569WUEpj', description: 'TFC Workspace (gcp-basic-demo as default')
+  }
+  stages {
+    stage ('Variables') {
+      when { 
+        expression { 
+          return params.UPDATE_VARS 
+        } 
+      }
+      steps {
+        withCredentials([
+          [
+            $class: 'VaultTokenCredentialBinding', 
+            addrVariable: 'VAULT_ADDR', 
+            credentialsId: "${params.vaultcreds}", 
+            tokenVariable: 'VAULT_TOKEN', 
+            vaultAddr: "${params.vaulturl}"
+          ]
+        ]) {
+          container('curl') {
+            sh """
+              curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o ./jq-linux64 && chmod 755 ./jq-linux64
+              export TFE_TOKEN="\$(curl -H "X-Vault-Token: ${env.VAULT_TOKEN}" -X GET ${env.VAULT_ADDR}/v1/${params.tfepath} | ./jq-linux64 -r .data.token)"
+
+              # Getting the vars from the workspace
+              curl -H "Authorization: Bearer \$TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -X GET "https://app.terraform.io/api/v2/workspaces/${params.tfe_wkspc_id}/vars" > wvars.json
+              
+              # Let's get the vars keys to change from Vault
+              curl -H "X-Vault-Token: ${env.VAULT_TOKEN}" -X GET ${env.VAULT_ADDR}/v1/${params.vaultpath} | ./jq-linux64 -r ".data.data" > tfevalues.json
+              cat tfevalues.json
+
+              # Let's put the keys in a file
+              ./jq-linux64 -r 'keys | .[]' tfevalues.json > tfekeys.txt
+              cat tfekeys.txt
+
+              # Let's iterate the variable keys to get the var ids and change the value in TFE
+              while read -r line;do
+                export VARID="\$(./jq-linux64 -r ".data[] | select(.attributes.key == \\"\"\$line\"\\") | .id" wvars.json)"
+                export VARVALUE="\$(./jq-linux64 -r ".\"\$line\"" tfevalues.json)"
+                echo "This is the var ID: \$VARID"
+                cat - <<EOF > varpayload.json
+{"data": {"attributes": {"key": \"\$line\","value": \"\$VARVALUE\","hcl": false, "sensitive": false},"type":"vars","id":\"\$VARID\"}}
+EOF
+                ./jq-linux64 -r . varpayload.json
+                curl -H "Authorization: Bearer \$TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -X PATCH -d @varpayload.json "https://app.terraform.io/api/v2/workspaces/${params.tfe_wkspc_id}/vars/\$VARID"
+              done < tfekeys.txt 
+            """
+          }
+        }
+      }
+    }
+    stage ('Terraform') {
+      steps {
+        withVault(configuration: [failIfNotFound: true, timeout: 10, vaultCredentialId: "${params.vaultcreds}", vaultUrl: "${params.vaulturl}"],
+        vaultSecrets: [
+          [
+            path: "${params.vaultpath}", 
+            secretValues: [
+              [envVar: 'tfe_org', vaultKey: 'tfe_org']
+            ]
+          ],
+          [
+            path: "${params.tfepath}",
+            engineVersion: 1,
+            secretValues: [
+              [envVar: "tfe_token", vaultKey: "token"]
+            ]
+          ]
+        ]) {
+          container('curl'){
+            echo "${env.tfe_token}"
+            sh """
+              # curl -H "Authorization: Bearer ${env.tfe_token}" -H "Content-Type: application/vnd.api+json" -X GET "https://app.terraform.io/api/v2/organizations/${env.tfe_org}/workspaces"
+              curl -H "Authorization: Bearer ${env.tfe_token}" -H "Content-Type: application/vnd.api+json" -X POST -d '{"data": {"attributes": {"is-destroy": false,"message": "Jenkins Demo run"},"type":"runs","relationships": {"workspace": {"data": {"type": "workspaces","id": \"${params.tfe_wkspc_id}\"}}}}}' "https://app.terraform.io/api/v2/runs"
+            """
+          }
+        }
+      }
+    }
+    stage ('Show Values') {
+      when { 
+        expression { 
+          return params.UPDATE_VARS 
+        } 
+      }
+      steps {
+        sh """
+          echo "These are the values used for TFC variables:"
+          # curl -H "X-Vault-Token: ${env.VAULT_TOKEN}" -X GET "${env.VAULT_ADDR}/v1/${params.vaultpath}" | ./jq-linux64 -r ".data.data"
+          ./jq-linux64 -r . tfevalues.json
+        """
+      }
+    }
+  }
+}
