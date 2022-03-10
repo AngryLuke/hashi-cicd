@@ -1,0 +1,3 @@
+# How to create a cluster with k3d
+
+k3d cluster create hashi-cicd --port 8080:8080@loadbalancer
