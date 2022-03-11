@@ -174,38 +174,6 @@ controller:
           - script: >
               folder('HashiCorp')
           - script: >
-              multibranchPipelineJob('HashiCorp/vault-tfe-pipeline') {
-                factory {
-                  workflowBranchProjectFactory {
-                    scriptPath('jenkins/Jenkinsfile.vault-tf-vars')
-                  }
-                }
-                branchSources {
-                  github {
-                    id('github-12')
-                    scanCredentialsId(null)
-                    repoOwner('angryluke')
-                    repository('hashi-cicd')
-                  }
-                }
-              }
-          - script: >
-              multibranchPipelineJob('HashiCorp/vault-no-plugin') {
-                factory {
-                  workflowBranchProjectFactory {
-                    scriptPath('jenkins/Jenkinsfile.vaultnoplugin')
-                  }
-                }
-                branchSources {
-                  github {
-                    id('github-22')
-                    scanCredentialsId(null)
-                    repoOwner('angryluke')
-                    repository('hashi-cicd')
-                  }
-                }
-              }
-          - script: >
               multibranchPipelineJob('HashiCorp/vault-binding') {
                 factory {
                   workflowBranchProjectFactory {
@@ -216,7 +184,7 @@ controller:
                   github {
                     id('github-32')
                     scanCredentialsId(null)
-                    repoOwner('dcanadillas')
+                    repoOwner('angryluke')
                     repository('hashi-cicd')
                   }
                 }

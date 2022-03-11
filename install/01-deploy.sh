@@ -84,6 +84,12 @@ path "kv/data/tfevalues" {
 path "terraform/creds/tfe-role" { 
   capabilities = ["read", "update", "list"] 
 }
+path "aws/sts/jenkins-role" {
+    capabilities = ["read", "list"]
+}
+path "auth/token/create" {
+    capabilities = ["update"]
+}
 EOF
 
 # Write policy to be used from tekton
@@ -129,6 +135,18 @@ kubectl exec vault-0 -n $VAULT_KNS -- vault write terraform/role/tfe-role user_i
 
 # Enable the kv secrets engine at the kv/ path
 kubectl exec vault-0 -n $VAULT_KNS -- vault secrets enable -version 2 kv
+
+# Enable AWS secrets engine
+kubectl exec vault-0 -n $VAULT_KNS -- vault secrets enable aws
+
+# The IAM role need to be created before
+
+# Write AWS role will be used from Vault to generate dynamic creds
+kubectl exec vault-0 -n $VAULT_KNS -- vault write aws/roles/jenkins-role \
+role_arns=arn:aws:iam::711129375688:role/lbolli-vault-aws-secret-engine \
+credential_type=assumed_role
+
+# For test: kubectl exec vault-0 -n $VAULT_KNS -- vault write aws/sts/jenkins-role ttl=15m
 
 # Put static secrets starting from kv/ mount point
 cat $3 | kubectl exec vault-0 -n $VAULT_KNS -ti -- vault kv put kv/cicd -

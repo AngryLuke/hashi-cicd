@@ -44,9 +44,14 @@ helm repo add jenkinsci https://charts.jenkins.io
 # Update repos
 helm repo update
 
-# Installing Vault in Development mode without the Vault Injector
-helm install vault --set injector.enabled=false --set server.dev.enabled=true -n $VAULT_KNS hashicorp/vault
+# Create K8s secrets to store AWS access/secret keys
+kubectl create secret generic aws-creds -n $VAULT_KNS \
+--from-literal=AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+--from-literal=AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
+--from-literal=AWS_SESSION_TOKEN="${AWS_SESSION_TOKEN}"
 
+# Installing Vault in Development mode without the Vault Injector
+helm install vault -n $VAULT_KNS -f config/vault-vaules.yaml hashicorp/vault
 
 
 case "$1" in
