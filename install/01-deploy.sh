@@ -2,6 +2,17 @@
 export VAULT_KNS="vault"
 export TKNS="tektoncd"
 
+if [ "$#" -ne 4 ]; then
+    echo "Need to enter 4 input parameters"
+    echo "<TFE_ORG> <TFE_USER> <SECRETS_FILE> <TFE_FILE>"
+    exit 1
+else
+    test -z "$1" && { echo "Need to provide a Terraform Org name"; exit 101; } || echo "TFE_ORG: $1"
+    test -z "$2" && { echo "Need to provide a Terraform User name"; exit 102; } || echo "TFE_USER: $2"
+    test ! -f "$3" && { echo "Need to provide an existing secrets json file"; exit 103; } || echo "SECRETSFILE: $3"
+    test ! -f "$4" && { echo "Need to provide an existing tfe values json file"; exit 104; } || echo "TFEVALUESFILE: $4"
+fi
+
 if [ -f "$HOME/.terraform.d/credentials.tfrc.json" ];then
     export TOKEN="$(cat $HOME/.terraform.d/credentials.tfrc.json | jq ".credentials.\"app.terraform.io\".token" | tr -d '"')"
 else
@@ -11,13 +22,13 @@ fi
 
 if ! which jq > /dev/null;then
     echo -e "\nThis script needs \"jq\" to parse JSON outputs. Please, install \"jq\"..."
-    exit 1
+    exit 10
 fi
 
 if [ -z "$1" ] || [ -z "$2" ];then
     echo -e "\nPlease type your Terraform Cloud Org and Terraform Cloud user as parameters: \n"
     echo -e "\t $0 <YOUR_TFC_ORG> <YOUR_TFC_USERNAME> \n"
-    exit 1
+    exit 20
 fi
 
 export TEAMID="$(curl \
@@ -53,6 +64,7 @@ export SA_CA_CRT=$(kubectl get secret $VAULT_SA_NAME -n $VAULT_KNS \
 export K8S_HOST="$(kubectl exec -ti vault-0 -n vault -- printenv KUBERNETES_SERVICE_HOST | tr -d '\r')"
 export K8S_PORT=$(kubectl exec -ti vault-0 -n vault -- printenv KUBERNETES_SERVICE_PORT | tr -d '\r')
 
+# Write policy to be used from jenkins
 kubectl exec -i vault-0 -n $VAULT_KNS -- vault policy write jenkins - <<EOF
 path "kv/data/cicd/*" { 
   capabilities = ["read", "update", "list"] 
@@ -74,6 +86,7 @@ path "terraform/creds/tfe-role" {
 }
 EOF
 
+# Write policy to be used from tekton
 kubectl exec -i vault-0 -n $VAULT_KNS -- vault policy write tektonpol - <<EOF
 path "secret/data/cicd/*" {
     capabilities = ["read","update","list"]
@@ -83,8 +96,10 @@ path "terraform/creds/*" {
 }
 EOF
 
+# Enable the K8s auth method at the kubernetes/ path
 kubectl exec vault-0 -n $VAULT_KNS -- vault auth enable kubernetes
 
+# Configure the K8s auth method for use JWT ServiceAccount
 kubectl exec vault-0 -n $VAULT_KNS -- vault write auth/kubernetes/config \
   token_reviewer_jwt="$SA_JWT_TOKEN" \
   kubernetes_host="https://$K8S_HOST:$K8S_PORT" \
@@ -105,19 +120,18 @@ kubectl exec vault-0 -n $VAULT_KNS -- vault write auth/kubernetes/role/tekton \
   token_no_default_policy=false \
   token_ttl="1m"
 
-
+# Enable the Terraform Cloud secrets engine at the terraform/ path
 kubectl exec vault-0 -n $VAULT_KNS -- vault secrets enable terraform
-
+# Configure the Terraform Cloud secrets engine to use the TF_TOKEN token
 kubectl exec vault-0 -n $VAULT_KNS -- vault write terraform/config token="$TOKEN"
+# Create a role named tfe-role with the USER_ID and a time-to-live of 10 minutes.
 kubectl exec vault-0 -n $VAULT_KNS -- vault write terraform/role/tfe-role user_id=$TFUSERID ttl=10m
 
+# Enable the kv secrets engine at the kv/ path
 kubectl exec vault-0 -n $VAULT_KNS -- vault secrets enable -version 2 kv
-cat config/secrets.json | kubectl exec vault-0 -n $VAULT_KNS -ti -- vault kv put kv/cicd -
-cat config/tfe_values.json | kubectl exec vault-0 -n $VAULT_KNS -ti -- vault kv put kv/tfevalues -
 
+# Put static secrets starting from kv/ mount point
+cat $3 | kubectl exec vault-0 -n $VAULT_KNS -ti -- vault kv put kv/cicd -
+cat $4 | kubectl exec vault-0 -n $VAULT_KNS -ti -- vault kv put kv/tfevalues -
 
-
-
-
-
-
+exit 0

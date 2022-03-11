@@ -2,7 +2,7 @@ PLATFORM="x86_64"
 OS="linux"
 
 define usage
-	@echo "Usage: make [all|install|configure|tkrun|clean] [TFEORG=<TFC_ORG> [TFEUSER=<YOUR_TFC_USER>] [SECRETSFILE=<YOUR_SECRETS_FILE>]]"
+	@echo "Usage: make [all|install|configure|tkrun|clean] [TFEORG=<TFC_ORG> [TFEUSER=<YOUR_TFC_USER>] [SECRETSFILE=<YOUR_SECRETS_FILE>] [TFEVALUESFILE=<YOUR_TFE_VALUES_FILE>]]"
 endef
 
 
@@ -16,7 +16,8 @@ configure:
 ifdef TFEORG
 ifdef TFEUSER
 ifdef SECRETSFILE
-	./01-deploy.sh $(TFEORG) $(TFEUSER) $(SECRETSFILE)
+ifdef TFEVALUESFILE
+	./01-deploy.sh $(TFEORG) $(TFEUSER) $(SECRETSFILE) $(TFEVALUESFILE)
 else
 	@echo "There is no Terraform username defined\n"
 	$(call usage)
@@ -27,6 +28,10 @@ else
 endif
 else
 	@echo "No secrets.json provided in the parameters\n"
+	$(call usage)
+endif
+else
+	@echo "No tfe_values.json provided in the parameters\n"
 	$(call usage)
 endif
 
