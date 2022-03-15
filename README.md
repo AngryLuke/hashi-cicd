@@ -12,10 +12,20 @@ Example of Vault integration with CI/CD pipelines
 
 ## Installation
 
-Install Vault and Jenkins:
-```bahs
+Install Vault and Jenkins without providing AWS credentials (in a json file):
+```bash
 cd install
 make jenkins
+```
+
+Install Vault and Jenkins providing AWS credentials (in a json file):
+```bash
+cp template/aws_credentials.json <path_you_prefer>
+```
+Edit file and put on it all the AWS credentials needed (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_SESSION_TOKEN)
+```
+cd install
+make jenkins <path_you_prefer>/aws_credentials.json
 ```
 
 The script is going to ask if you are using the righ K8s context. Press any key to continue or Crtl'C to cancel.

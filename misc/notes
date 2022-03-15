@@ -4,6 +4,9 @@ k3d cluster create hashi-cicd --port 8080:8080@loadbalancer
 # How to delete the cluster named hashi-cicd
 k3d cluster delete hashi-cicd
 
+# How to obtain cluster information
+kubectl cluster-info
+
 # How to delete k8s secrets
 kubectl delete secrets <secrets_name> -n <namespace_name>
 
@@ -12,6 +15,9 @@ kubectl get secrets -n <namespace_name>
 
 # How to view a secrets description
 kubectl describe secrets/<secrets_name> -n <namespace_name>
+
+# How to debug a pod execution
+kubectl describe pod <pod_name> -n <namespace_name>
 
 # How to list all helm deployment
 helm list --all-namespaces

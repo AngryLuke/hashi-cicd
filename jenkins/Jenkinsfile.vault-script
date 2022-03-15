@@ -24,13 +24,17 @@ pipeline {
     booleanParam defaultValue: true, description: 'Check to update vars', name: 'UPDATE_VARS'
     string(name: 'vaulturl', defaultValue: 'http://vault-ui.vault.svc.cluster.local:8200', description: 'Vault API URL')
     string(name: 'vaultpath', defaultValue: 'kv/data/tfevalues', description: 'Secrets path for Vault static secrets')
-    string(name: 'tfepath', defaultValue: 'terraform/creds/dcanadillas-role', description: 'Secrets path for Terraform secrets')
+    string(name: 'tfepath', defaultValue: 'terraform/creds/lbolli-role', description: 'Secrets path for Terraform secrets')
+    string(name: 'awspath', defaultValue: 'aws/sts/jenkins-role', description: 'Secrets path for dynamic AWS credentials')
+    string(name: 'ttlawscreds', defaultValue: '15m', description: 'Specifies the TTL for the use of the STS token (s, m, h)')
     string(name: 'vaultns', defaultValue: 'root', description: 'Vault Namespace')
     string(name: 'vaultcreds', defaultValue: 'kubernetes', description: 'Vault credentials')
-    string(name: 'tfe_wkspc_id', defaultValue: 'ws-eAJzKDto569WUEpj', description: 'TFC Workspace (gcp-basic-demo as default')
+    string(name: 'tfe_wkspc_id', defaultValue: 'ws-xxxxxxxxxxxxxxxx', description: 'TFC Workspace (gcp-basic-demo as default')
+    string(name: 'git_tag', defaultValue: 'v1.0.1', description: 'Git tag related to the repository git describe --abbrev=0 --tags')
+    string(name: 'git_commit', defaultValue: '0a60f01', description: 'Latest Git commit git rev-parse --short HEAD')
   }
   stages {
-    stage ('Variables') {
+    stage ('Credentials Variables') {
       when { 
         expression { 
           return params.UPDATE_VARS 
@@ -50,7 +54,33 @@ pipeline {
             sh """
               cd /home/jenkins/agent/workspace/HashiCorp_Hashi-CICD_master
               ls
-              ./jenkins/updatevars.sh ${params.vaultpath} ${params.tfepath} ${params.tfe_wkspc_id} 
+              ./jenkins/update_awsenv_vars.sh ${params.tfepath} ${params.awspath} ${params.ttlawscreds} ${params.tfe_wkspc_id} 
+            """
+          }
+        }
+      }
+    }
+    stage ('Workspace Variables') {
+      when {
+        expression { 
+          return params.UPDATE_VARS 
+        } 
+      }
+      steps {
+        withCredentials([
+          [
+            $class: 'VaultTokenCredentialBinding', 
+            addrVariable: 'VAULT_ADDR', 
+            credentialsId: "${params.vaultcreds}", 
+            tokenVariable: 'VAULT_TOKEN', 
+            vaultAddr: "${params.vaulturl}"
+          ]
+        ]) {
+          container('curl') {
+            sh """
+              cd /home/jenkins/agent/workspace/HashiCorp_Hashi-CICD_master
+              ls
+              ./jenkins/update_vars.sh ${params.vaultpath} ${params.tfepath} ${params.tfe_wkspc_id} 
             """
           }
         }
@@ -79,6 +109,32 @@ pipeline {
             sh """
               # curl -H "Authorization: Bearer ${env.tfe_token}" -H "Content-Type: application/vnd.api+json" -X GET "https://app.terraform.io/api/v2/organizations/${env.tfe_org}/workspaces"
               curl -H "Authorization: Bearer ${env.tfe_token}" -H "Content-Type: application/vnd.api+json" -X POST -d '{"data": {"attributes": {"is-destroy": false,"message": "Jenkins Demo run"},"type":"runs","relationships": {"workspace": {"data": {"type": "workspaces","id": \"${params.tfe_wkspc_id}\"}}}}}' "https://app.terraform.io/api/v2/runs"
+            """
+          }
+        }
+      }
+    }
+    stage ('Tag Workspace') {
+      when {
+        expression { 
+          return params.UPDATE_VARS 
+        } 
+      }
+      steps {
+        withCredentials([
+          [
+            $class: 'VaultTokenCredentialBinding', 
+            addrVariable: 'VAULT_ADDR', 
+            credentialsId: "${params.vaultcreds}", 
+            tokenVariable: 'VAULT_TOKEN', 
+            vaultAddr: "${params.vaulturl}"
+          ]
+        ]) {
+          container('curl') {
+            sh """
+              cd /home/jenkins/agent/workspace/HashiCorp_Hashi-CICD_master
+              ls
+              ./jenkins/update_ws.sh ${params.tfepath} ${params.tfe_wkspc_id} 
             """
           }
         }

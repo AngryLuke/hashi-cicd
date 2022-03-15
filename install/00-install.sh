@@ -2,7 +2,21 @@
 export VAULT_KNS="vault"
 export JENKINS_KNS="jenkins"
 
+echo "===> $@"
 
+if [[ ! -f "$2" ]]; then
+    echo -e "\nAWS Credentials file not found. Provide AWS User credentials..."
+    echo -e "Insert AWS_ACCESS_KEY_ID: "
+    read -s -p "" AWS_ACCESS_KEY_ID
+    echo -e "\nInsert AWS_SECRET_ACCESS_KEY: "
+    read -s -p "" AWS_SECRET_ACCESS_KEY
+    echo -e "\nInsert AWS_SESSION_TOKEN: "
+    read -s -p "" AWS_SESSION_TOKEN
+else
+    AWS_ACCESS_KEY_ID=$(cat $2 | jq -r '.AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY=$(cat $2 | jq -r '.AWS_SECRET_ACCESS_KEY')
+    AWS_SESSION_TOKEN=$(cat $2 | jq -r '.AWS_SESSION_TOKEN')
+fi
 
 if ! which kubectl;then
   echo "Kubectl CLI is not installed... "
