@@ -52,7 +52,7 @@ pipeline {
         ]) {
           container('curl') {
             sh """
-              cd /home/jenkins/agent/workspace/HashiCorp_Hashi-CICD_master
+              cd /home/jenkins/agent/workspace/HashiCorp_vault-binding_master
               ls
               ./jenkins/update_awsenv_vars.sh ${params.tfepath} ${params.awspath} ${params.ttlawscreds} ${params.tfe_wkspc_id} 
             """
@@ -78,7 +78,7 @@ pipeline {
         ]) {
           container('curl') {
             sh """
-              cd /home/jenkins/agent/workspace/HashiCorp_Hashi-CICD_master
+              cd /home/jenkins/agent/workspace/HashiCorp_vault-binding_master
               ls
               ./jenkins/update_vars.sh ${params.vaultpath} ${params.tfepath} ${params.tfe_wkspc_id} 
             """
@@ -132,7 +132,7 @@ pipeline {
         ]) {
           container('curl') {
             sh """
-              cd /home/jenkins/agent/workspace/HashiCorp_Hashi-CICD_master
+              cd /home/jenkins/agent/workspace/HashiCorp_vault-binding_master
               ls
               ./jenkins/update_ws.sh ${params.tfepath} ${params.tfe_wkspc_id} 
             """
