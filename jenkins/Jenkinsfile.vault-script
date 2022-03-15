@@ -22,13 +22,13 @@ pipeline {
   }
   parameters {
     booleanParam defaultValue: true, description: 'Check to update vars', name: 'UPDATE_VARS'
-    string(name: 'vaulturl', defaultValue: 'http://vault-ui.vault.svc.cluster.local:8200', description: 'Vault API URL')
+    string(name: 'vaulturl', defaultValue: 'http://vault.vault.svc.cluster.local:8200', description: 'Vault API URL')
     string(name: 'vaultpath', defaultValue: 'kv/data/tfevalues', description: 'Secrets path for Vault static secrets')
     string(name: 'tfepath', defaultValue: 'terraform/creds/lbolli-role', description: 'Secrets path for Terraform secrets')
     string(name: 'awspath', defaultValue: 'aws/sts/jenkins-role', description: 'Secrets path for dynamic AWS credentials')
     string(name: 'ttlawscreds', defaultValue: '15m', description: 'Specifies the TTL for the use of the STS token (s, m, h)')
     string(name: 'vaultns', defaultValue: 'root', description: 'Vault Namespace')
-    string(name: 'vaultcreds', defaultValue: 'kubernetes', description: 'Vault credentials')
+    string(name: 'vaultcreds', defaultValue: 'k8s-vaultdemo', description: 'Vault credentials')
     string(name: 'tfe_wkspc_id', defaultValue: 'ws-xxxxxxxxxxxxxxxx', description: 'TFC Workspace (gcp-basic-demo as default')
     string(name: 'git_tag', defaultValue: 'v1.0.1', description: 'Git tag related to the repository git describe --abbrev=0 --tags')
     string(name: 'git_commit', defaultValue: '0a60f01', description: 'Latest Git commit git rev-parse --short HEAD')
