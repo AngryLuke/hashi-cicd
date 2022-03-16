@@ -15,9 +15,11 @@ export TFE_TOKEN="$(curl -H "X-Vault-Token: ${VAULT_TOKEN}" -X GET ${VAULT_ADDR}
 # Getting the vars from the workspace
 # curl -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -X GET "https://app.terraform.io/api/v2/workspaces/${WORKSPACE}/vars" > wvars.json
 
+echo "Get workspace variables"
 # Get workspace variables
 WORKSPACE_VARS=$(curl -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -X GET "https://app.terraform.io/api/v2/workspaces/${WORKSPACE}/vars" | ./jq-linux64 -r)
 
+echo "Get the vars keys to change from Vault"
 # Let's get the vars keys to change from Vault
 curl -H "X-Vault-Token: ${VAULT_TOKEN}" -X GET ${VAULT_ADDR}/v1/${VAULT_VALUES_PATH} | ./jq-linux64 -r ".data.data" > tfevalues.json
 cat tfevalues.json
