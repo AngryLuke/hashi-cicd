@@ -26,9 +26,9 @@ AWS_ACCESS_KEY_ID_VALUE=$(./jq-linux64 -r '.access_key' aws-creds-tmp.json)
 AWS_SECRET_ACCESS_KEY_VALUE=$(./jq-linux64 -r '.secret_key' aws-creds-tmp.json)
 AWS_SESSION_TOKEN_VALUE=$(./jq-linux64 -r '.security_token' aws-creds-tmp.json)
 
-rm aws-creds-tmp.json
-
 cat aws-creds-tmp.json
+
+rm aws-creds-tmp.json
 
 echo "===========> Get Workspace variable"
 # Check if env variable exists
