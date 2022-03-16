@@ -32,25 +32,31 @@ do
 
   case "$VAR_NAME" in
     AWS_ACCESS_KEY_ID)
+      echo "VAR_NAME: ${VAR_NAME}"
       echo "{"data": {"id":"${VAR_ID}","attributes": {"key":"${VAR_NAME}","value":"${AWS_ACCESS_KEY_ID_VALUE}","category":"${VAR_TYPE}","hcl": false,"sensitive": false},"type":"vars"} }" > payload.json
       curl -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -X PATCH -d @payload.json "https://app.terraform.io/api/v2/workspaces/${WORKSPACE}/vars/${VAR_ID}"
       rm payload.json
       ;;
     AWS_SECRET_ACCESS_KEY)
+      echo "VAR_NAME: ${VAR_NAME}"
       echo "{"data": {"id":"${VAR_ID}","attributes": {"key":"${VAR_NAME}","value":"${AWS_SECRET_ACCESS_KEY_VALUE}","category":"${VAR_TYPE}","hcl": false,"sensitive": true},"type":"vars"} }" > payload.json
       curl -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -X PATCH -d @payload.json "https://app.terraform.io/api/v2/workspaces/${WORKSPACE}/vars/${VAR_ID}"
       rm payload.json
       ;;
     AWS_SESSION_TOKEN)
+      echo "VAR_NAME: ${VAR_NAME}"
       echo "{"data": {"id":"${VAR_ID}","attributes": {"key":"${VAR_NAME}","value":"${AWS_SESSION_TOKEN_VALUE}","category":"${VAR_TYPE}","hcl": false,"sensitive": true},"type":"vars"} }" > payload.json
       curl -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -X PATCH -d @payload.json "https://app.terraform.io/api/v2/workspaces/${WORKSPACE}/vars/${VAR_ID}"
       rm payload.json
       ;;
     AWS_SESSION_EXPIRATION)
-      #EXP_DATE=$(date -v "+${TTL_AWS_CREDS}" -u +"%Y-%m-%dT%H:%M:%SZ")
+      echo "VAR_NAME: ${VAR_NAME}"
+      EXP_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+      echo "EXP_DATE: ${EXP_DATE}"
       #echo "{"data": {"id":"${VAR_ID}","attributes": {"key":"${VAR_NAME}","value":"${EXP_DATE}","category":"${VAR_TYPE}","hcl": false,"sensitive": false},"type":"vars"} }" > payload.json
       #curl -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -X PATCH -d @payload.json "https://app.terraform.io/api/v2/workspaces/${WORKSPACE}/vars/${VAR_ID}"
       #rm payload.json
+      ;;
     *)
       echo "variable ${VAR_NAME} will be skipped"
       ;;
