@@ -7,6 +7,11 @@ VAULT_AWS_PATH=$2
 TTL_AWS_CREDS=$3
 WORKSPACE=$4
 
+echo "VAULT_TERRAFORM_PATH: $VAULT_TERRAFORM_PATH"
+echo "VAULT_AWS_PATH: $VAULT_AWS_PATH"
+echo "TTL_AWS_CREDS: $TTL_AWS_CREDS"
+echo "WORKSPACE: $WORKSPACE"
+
 
 curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o ./jq-linux64 && chmod 755 ./jq-linux64
 export TFE_TOKEN="$(curl -H "X-Vault-Token: ${VAULT_TOKEN}" -X GET ${VAULT_ADDR}/v1/$VAULT_TERRAFORM_PATH | ./jq-linux64 -r .data.token)"
