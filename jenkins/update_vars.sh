@@ -45,7 +45,7 @@ do
   then
     VAR_VALUE=$(./jq-linux64 --arg v "$VAR_NAME" -r '.[$v]' tfevalues.json)
     echo $VAR_VALUE
-    echo "{"data": {"attributes": {"key": "${VAR_NAME}","value": "${VAR_VALUE}","hcl": false, "sensitive": false},"type":"vars","id":"${VAR_ID}"}}" > varpayload.json
+    echo '{"data": {"attributes": {"key": "${VAR_NAME}","value": "${VAR_VALUE}","hcl": false, "sensitive": false},"type":"vars","id":"${VAR_ID}"}}' > varpayload.json
     cat varpayload.json
     curl -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -X PATCH -d @varpayload.json "https://app.terraform.io/api/v2/workspaces/${WORKSPACE}/vars/${VARID}"
     rm varpayload.json

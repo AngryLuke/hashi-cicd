@@ -22,13 +22,13 @@ do
   case "$VAR_NAME" in
     git-tag)
       # update value of a git-tag variable with the latest tag
-      echo "{"data": {"id":"${VAR_ID}","attributes": {"key":"${VAR_NAME}","value":"${VAR_TAG}","category":"${VAR_TYPE}","hcl": false,"sensitive": false},"type":"vars"} }" > payload.json
+      echo '{"data": {"id":"'${VAR_ID}'","attributes": {"key":"'${VAR_NAME}'","value":"'${VAR_TAG}'","category":"'${VAR_TYPE}'","hcl": false,"sensitive": false},"type":"vars"} }' > payload.json
       curl -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -X PATCH -d @payload.json "https://app.terraform.io/api/v2/workspaces/${WORKSPACE}/vars/${VAR_ID}"
       rm payload.json
     ;;
     git-commit)
       # update value of a git-commit with the latest commit
-      echo "{"data": {"id":"${VAR_ID}","attributes": {"key":"${VAR_NAME}","value":"${VAR_COMMIT}","category":"${VAR_TYPE}","hcl": false,"sensitive": false},"type":"vars"} }" > payload.json
+      echo 'data": {"id":"'${VAR_ID}'","attributes": {"key":"'${VAR_NAME}'","value":"'${VAR_COMMIT}'","category":"'${VAR_TYPE}'","hcl": false,"sensitive": false},"type":"vars"} }' > payload.json
       curl -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -X PATCH -d @payload.json "https://app.terraform.io/api/v2/workspaces/${WORKSPACE}/vars/${VAR_ID}"
       rm payload.json
     ;;
@@ -42,6 +42,8 @@ done
 cat - <<EOF > payload.json
 { "data": [ { "type": "tags", "attributes": { "name": "${TAG}" } } ] }
 EOF
+
+echo '{ "data": [ { "type": "tags", "attributes": { "name": "${TAG}" } } ] }'
 
 curl \
   --header "Authorization: Bearer $TFE_TOKEN" \
