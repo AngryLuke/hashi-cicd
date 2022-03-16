@@ -9,6 +9,7 @@ echo "VAULT_TERRAFORM_PATH: $VAULT_TERRAFORM_PATH"
 echo "WORKSPACE: $WORKSPACE"
 
 
+echo "===========> Get TFE_TOKEN"
 curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o ./jq-linux64 && chmod 755 ./jq-linux64
 export TFE_TOKEN="$(curl -H "X-Vault-Token: ${VAULT_TOKEN}" -X GET ${VAULT_ADDR}/v1/$VAULT_TERRAFORM_PATH | ./jq-linux64 -r .data.token)"
 

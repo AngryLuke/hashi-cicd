@@ -13,9 +13,11 @@ echo "TTL_AWS_CREDS: $TTL_AWS_CREDS"
 echo "WORKSPACE: $WORKSPACE"
 
 
+echo "===========> Get TFE_TOKEN"
 curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o ./jq-linux64 && chmod 755 ./jq-linux64
 export TFE_TOKEN="$(curl -H "X-Vault-Token: ${VAULT_TOKEN}" -X GET ${VAULT_ADDR}/v1/$VAULT_TERRAFORM_PATH | ./jq-linux64 -r .data.token)"
 
+echo "===========> Get Credentials"
 # Let's generate new aws dynamic credentials
 curl -H "X-Vault-Token: ${VAULT_TOKEN}" -X POST -d '{"ttl": "'${TTL_AWS_CREDS}'"}' ${VAULT_ADDR}/v1/${VAULT_AWS_PATH} | ./jq-linux64 -r ".data" > aws-creds-tmp.json
 
@@ -26,6 +28,7 @@ AWS_SESSION_TOKEN_VALUE=$(./jq-linux64 -r '.security_token' aws-creds-tmp.json)
 
 rm aws-creds-tmp.json
 
+echo "===========> Get Workspace variable"
 # Check if env variable exists
 WORKSPACE_VARS=$(curl -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -X GET "https://app.terraform.io/api/v2/workspaces/${WORKSPACE}/vars" | ./jq-linux64 -r)
 
