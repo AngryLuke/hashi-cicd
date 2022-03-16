@@ -43,7 +43,7 @@ do
 
   if [[ ! -z "$CHECK_IF_VAR_EXISTS" ]]
   then
-    VAR_VALUE=$(./jq-linux64 --arg v "$VAR_NAME" -r '.[$v]' tfevaules.json)
+    VAR_VALUE=$(./jq-linux64 --arg v "$VAR_NAME" -r '.[$v]' tfevalues.json)
     echo $VAR_VALUE
     echo "{"data": {"attributes": {"key": "${VAR_NAME}","value": "${VAR_VALUE}","hcl": false, "sensitive": false},"type":"vars","id":"${VAR_ID}"}}" > varpayload.json
     cat varpayload.json
