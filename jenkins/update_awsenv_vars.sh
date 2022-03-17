@@ -24,6 +24,7 @@ echo "===========> Get Credentials"
 # Let's generate new aws dynamic credentials
 curl -H "X-Vault-Token: root" -X POST -d '{"ttl": "'${TTL_AWS_CREDS}'"}' ${VAULT_ADDR}/v1/${VAULT_AWS_PATH} | ./jq-linux64 -r ".data" > aws-creds-tmp.json
 
+echo "===========> Cat credentials file"
 cat aws-creds-tmp.json
 
 # Let's put the keys in a file
