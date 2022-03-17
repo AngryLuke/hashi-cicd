@@ -14,22 +14,23 @@ echo "WORKSPACE: $WORKSPACE"
 
 
 echo "===========> Get TFE_TOKEN"
-echo "echo VAULT_TOKEN: ${VAULT_TOKEN}"
+echo "VAULT_TOKEN: ${VAULT_TOKEN}"
 echo "===========> Curl to Vault"
 echo "$(curl -H "X-Vault-Token: ${VAULT_TOKEN}" -X GET ${VAULT_ADDR}/v1/$VAULT_TERRAFORM_PATH | ./jq-linux64 -r .data.token)"
 curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o ./jq-linux64 && chmod 755 ./jq-linux64
 export TFE_TOKEN="$(curl -H "X-Vault-Token: ${VAULT_TOKEN}" -X GET ${VAULT_ADDR}/v1/$VAULT_TERRAFORM_PATH | ./jq-linux64 -r .data.token)"
+echo "TFE_TOKEN: ${TFE_TOKEN}"
 
 echo "===========> Get Credentials"
 # Let's generate new aws dynamic credentials
 curl -H "X-Vault-Token: ${VAULT_TOKEN}" -X POST -d '{"ttl": "'${TTL_AWS_CREDS}'"}' ${VAULT_ADDR}/v1/${VAULT_AWS_PATH} | ./jq-linux64 -r ".data" > aws-creds-tmp.json
 
+cat aws-creds-tmp.json
+
 # Let's put the keys in a file
 AWS_ACCESS_KEY_ID_VALUE=$(./jq-linux64 -r '.access_key' aws-creds-tmp.json)
 AWS_SECRET_ACCESS_KEY_VALUE=$(./jq-linux64 -r '.secret_key' aws-creds-tmp.json)
 AWS_SESSION_TOKEN_VALUE=$(./jq-linux64 -r '.security_token' aws-creds-tmp.json)
-
-cat aws-creds-tmp.json
 
 rm aws-creds-tmp.json
 
