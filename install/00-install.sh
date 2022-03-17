@@ -13,9 +13,10 @@ if [[ ! -f "$2" ]]; then
     echo -e "\nInsert AWS_SESSION_TOKEN: "
     read -s -p "" AWS_SESSION_TOKEN
 else
-    AWS_ACCESS_KEY_ID=$(cat $2 | jq -r '.AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY=$(cat $2 | jq -r '.AWS_SECRET_ACCESS_KEY')
-    AWS_SESSION_TOKEN=$(cat $2 | jq -r '.AWS_SESSION_TOKEN')
+    ACCESS_KEY_ID=$(cat $2 | jq -r '.AWS_ACCESS_KEY_ID')
+    SECRET_ACCESS_KEY=$(cat $2 | jq -r '.AWS_SECRET_ACCESS_KEY')
+    SESSION_TOKEN=$(cat $2 | jq -r '.AWS_SESSION_TOKEN')
+    SESSION_EXPIRATION=$(cat test_aws_cred.json | jq -r '.AWS_SESSION_EXPIRATION')
 fi
 
 if ! which kubectl;then
@@ -60,9 +61,10 @@ helm repo update
 
 # Create K8s secrets to store AWS access/secret keys
 kubectl create secret generic aws-creds -n $VAULT_KNS \
---from-literal=AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
---from-literal=AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
---from-literal=AWS_SESSION_TOKEN="${AWS_SESSION_TOKEN}"
+--from-literal=AWS_ACCESS_KEY_ID="${ACCESS_KEY_ID}" \
+--from-literal=AWS_SECRET_ACCESS_KEY="${SECRET_ACCESS_KEY}" \
+--from-literal=AWS_SESSION_TOKEN="${SESSION_TOKEN}" \
+--from-literal=AWS_SESSION_EXPIRATION="${SESSION_EXPIRATION}"
 
 # Installing Vault in Development mode without the Vault Injector
 helm install vault -n $VAULT_KNS -f config/vault-vaules.yaml hashicorp/vault
