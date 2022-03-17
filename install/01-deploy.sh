@@ -85,7 +85,7 @@ path "terraform/creds/tfe-role" {
   capabilities = ["read", "update", "list"] 
 }
 path "aws/sts/jenkins-role" {
-    capabilities = ["read", "write", "list"]
+    capabilities = ["read", "create", "list", "update"]
 }
 path "auth/token/create" {
     capabilities = ["update"]

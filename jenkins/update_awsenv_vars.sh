@@ -34,6 +34,10 @@ AWS_SESSION_TOKEN_VALUE=$(./jq-linux64 -r '.security_token' aws-creds-tmp.json)
 
 rm aws-creds-tmp.json
 
+echo "AWS_ACCESS_KEY_ID_VALUE: ${AWS_ACCESS_KEY_ID_VALUE}"
+echo "AWS_SECRET_ACCESS_KEY_VALUE: ${AWS_SECRET_ACCESS_KEY_VALUE}"
+echo "AWS_SESSION_TOKEN_VALUE: ${AWS_SESSION_TOKEN_VALUE}"
+
 echo "===========> Get Workspace variable"
 # Check if env variable exists
 WORKSPACE_VARS=$(curl -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -X GET "https://app.terraform.io/api/v2/workspaces/${WORKSPACE}/vars" | ./jq-linux64 -r)

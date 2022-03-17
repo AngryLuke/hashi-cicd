@@ -60,5 +60,31 @@ pipeline {
         }
       }
     }
+    stage ('Workspace Variables') {
+      when {
+        expression { 
+          return params.UPDATE_VARS 
+        } 
+      }
+      steps {
+        withCredentials([
+          [
+            $class: 'VaultTokenCredentialBinding', 
+            addrVariable: 'VAULT_ADDR', 
+            credentialsId: "${params.vaultcreds}", 
+            tokenVariable: 'VAULT_TOKEN', 
+            vaultAddr: "${params.vaulturl}"
+          ]
+        ]) {
+          container('curl') {
+            sh """
+              cd /home/jenkins/agent/workspace/HashiCorp_vault-binding_master
+              ls
+              ./jenkins/update_vars.sh ${params.vaultpath} ${params.tfepath} ${params.tfe_wkspc_id} 
+            """
+          }
+        }
+      }
+    }
   }
 }
