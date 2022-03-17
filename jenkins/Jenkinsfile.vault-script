@@ -86,5 +86,33 @@ pipeline {
         }
       }
     }
+    stage ('Terraform') {
+      steps {
+        withVault(configuration: [failIfNotFound: true, timeout: 10, vaultCredentialId: "${params.vaultcreds}", vaultUrl: "${params.vaulturl}"],
+        vaultSecrets: [
+          [
+            path: "${params.vaultpath}", 
+            secretValues: [
+              [envVar: 'tfe_org', vaultKey: 'tfe_org']
+            ]
+          ],
+          [
+            path: "${params.tfepath}",
+            engineVersion: 1,
+            secretValues: [
+              [envVar: "tfe_token", vaultKey: "token"]
+            ]
+          ]
+        ]) {
+          container('curl'){
+            echo "${env.tfe_token}"
+            sh """
+              # curl -H "Authorization: Bearer ${env.tfe_token}" -H "Content-Type: application/vnd.api+json" -X GET "https://app.terraform.io/api/v2/organizations/${env.tfe_org}/workspaces"
+              curl -H "Authorization: Bearer ${env.tfe_token}" -H "Content-Type: application/vnd.api+json" -X POST -d '{"data": {"attributes": {"is-destroy": false,"message": "Jenkins Demo run"},"type":"runs","relationships": {"workspace": {"data": {"type": "workspaces","id": \"${params.tfe_wkspc_id}\"}}}}}' "https://app.terraform.io/api/v2/runs"
+            """
+          }
+        }
+      }
+    }
   }
 }
