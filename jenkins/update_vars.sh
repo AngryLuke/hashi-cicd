@@ -38,12 +38,19 @@ do
 
   if [[ ! -z "$CHECK_IF_VAR_EXISTS" ]]
   then
-    VAR_VALUE=$(./jq-linux64 --arg v "$VAR_NAME" -r '.[$v]' tfevalues.json)
-    echo $VAR_VALUE
-    echo '{"data": {"attributes": {"key": "'${VAR_NAME}'","value": "'${VAR_VALUE}'","hcl": false, "sensitive": false},"type":"vars","id":"'${VAR_ID}'"}}' > varpayload.json
-    cat varpayload.json
-    curl -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -X PATCH -d @varpayload.json "https://app.terraform.io/api/v2/workspaces/${WORKSPACE}/vars/${VAR_ID}"
-    rm varpayload.json
+    if [ "$VAR_NAME" == "jenkins-timestamp" ]; then
+      JENKINS_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+      echo "=======> jenkins-timestamp: ${JENKINS_TIMESTAMP}"
+      echo '{"data": {"attributes": {"key": "'${VAR_NAME}'","value": "'${JENKINS_TIMESTAMP}'","hcl": false, "sensitive": false},"type":"vars","id":"'${VAR_ID}'"}}' > varpayload.json
+      curl -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -X PATCH -d @varpayload.json "https://app.terraform.io/api/v2/workspaces/${WORKSPACE}/vars/${VAR_ID}"
+    else 
+      VAR_VALUE=$(./jq-linux64 --arg v "$VAR_NAME" -r '.[$v]' tfevalues.json)
+      echo $VAR_VALUE
+      echo '{"data": {"attributes": {"key": "'${VAR_NAME}'","value": "'${VAR_VALUE}'","hcl": false, "sensitive": false},"type":"vars","id":"'${VAR_ID}'"}}' > varpayload.json
+      cat varpayload.json
+      curl -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -X PATCH -d @varpayload.json "https://app.terraform.io/api/v2/workspaces/${WORKSPACE}/vars/${VAR_ID}"
+      rm varpayload.json
+    fi
   fi
 
 done
