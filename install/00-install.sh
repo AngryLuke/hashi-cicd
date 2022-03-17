@@ -2,8 +2,6 @@
 export VAULT_KNS="vault"
 export JENKINS_KNS="jenkins"
 
-echo "===> $@"
-
 if [[ ! -f "$2" ]]; then
     echo -e "\nAWS Credentials file not found. Provide AWS User credentials..."
     echo -e "Insert AWS_ACCESS_KEY_ID: "
@@ -16,7 +14,7 @@ else
     ACCESS_KEY_ID=$(cat $2 | jq -r '.AWS_ACCESS_KEY_ID')
     SECRET_ACCESS_KEY=$(cat $2 | jq -r '.AWS_SECRET_ACCESS_KEY')
     SESSION_TOKEN=$(cat $2 | jq -r '.AWS_SESSION_TOKEN')
-    SESSION_EXPIRATION=$(cat test_aws_cred.json | jq -r '.AWS_SESSION_EXPIRATION')
+    SESSION_EXPIRATION=$(cat $2 | jq -r '.AWS_SESSION_EXPIRATION')
 fi
 
 if ! which kubectl;then
