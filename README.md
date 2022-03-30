@@ -18,6 +18,10 @@ cd install
 make jenkins
 ```
 
+The script will ask to you to provide AWS_ACCESS_KEY, AWS_SECRET_KEY and AWS_SESSION_TOKEN.
+The AWS_SESSION_TOKEN is mandatory for Vault aws secrets engine because it will be configured with the usage of
+sts-assume role.
+
 Install Vault and Jenkins providing AWS credentials (in a json file):
 ```bash
 cp template/aws_credentials.json <path_you_prefer>
@@ -36,13 +40,15 @@ The script is going to ask if you are using the righ K8s context. Press any key 
 > make install
 > ```
 
-Use the static secrets file as a template `install/config/secrets.json` to create your own and apply your custom values:
+Copy the template file (secrets.json) in another folder and write your personal secrets: this new file will be the one you'll
+use in the next step.
+> ```bash
+> cp install/config/secrets.json <your_preferred_path>/<your_secrets_file>.json
+> ```
+
+Use the new static secrets file to create your own and apply your custom values:
 ```json
 {
-  "<tfc_var1>": "<value_to_be_set>",
-  "<tfc_var2>": "<value_to_be_set>",
-  "..." : "...",
-  "<tfc_varn>": "<value_to_be_set>",
   "tfe_org": "<your_tfc_org>",
   "tfe_token": "<static_example_tfe_token>",
   "gh_user": "<gh_token>",
@@ -50,33 +56,31 @@ Use the static secrets file as a template `install/config/secrets.json` to creat
 }
 ```
 
-For example you can copy that file in another folder and write your personal secrets: this new file will be the one you'll
-use in the next step.
-> ```bash
-> cp install/config/secrets.json <your_preferred_path>/<your_secrets_file>.json
-> ```
+Copy the template file (tfe_values.json) in another folder and write on it your TFC workspace variable: this new file will be the one you'll use in the next step.
 
 ```json
 {
-  "<tfc_var1>": "<value_to_be_set>",
-  "<tfc_var2>": "<value_to_be_set>",
+  "<tfc_variable_name_1>": "<value_to_be_set>",
+  "<tfc_variable_name_2>": "<value_to_be_set>",
   "..." : "...",
-  "<tfc_varn>": "<value_to_be_set>"
+  "<tfc_variable_name_n>": "<value_to_be_set>"
 }
 ```
 
-`<tfc_var1> ... <tfc_varn>` are **existing variable keys in your Terraform Cloud Workspace**
-Also, configure the values of another secret with only the Terraform Cloud variables of your workspace. That is in the file `install/config/tfe_values.json`:
-
-
-`<tfc_var1> ... <tfc_varn>` are **existing variable keys in your Terraform Cloud Workspace**. It they are not existing in the Workspace pipelines will fail.
-
-
-
 Configure Vault with the required secrets and Kubernetes auth:
-
 ```bash
 make configure TFEORG=<your_TFC_organization> TFEUSER=<your_TFC_user> SECRETSFILE=<your_preferred_path>/<your_secrets_file>.json
+```
+
+## Enable AWS Auth Method
+Create an AWS IAM role with at least AmazonEC2FullAccess and add trust relationship for a specific user into a specific account
+Here is a link that explains how does it work: [https://aws.amazon.com/blogs/security/how-to-use-trust-policies-with-iam-roles] (https://aws.amazon.com/blogs/security/how-to-use-trust-policies-with-iam-roles/)
+
+Each AWS IAM role has a "trust policy" which specifies which entities are trusted to call sts:AssumeRole on the role and retrieve credentials that can be used to authenticate with that role. When AssumeRole is called, a parameter called RoleSessionName is passed in, which is chosen arbitrarily by the entity which calls AssumeRole. If you have a role with an ARN arn:aws:iam::123456789012:role/MyRole, then the credentials returned by calling AssumeRole on that role will be arn:aws:sts::123456789012:assumed-role/MyRole/RoleSessionName where RoleSessionName is the session name in the AssumeRole API call. It is this latter value which Vault actually sees.
+
+Configure Vault with AWS authentication method:
+```bash
+make awsauth ROLEARN=<your_role_arn>
 ```
 
 ## Check vault version

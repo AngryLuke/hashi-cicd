@@ -6,7 +6,7 @@ controller:
   # Used for label app.kubernetes.io/component
   componentName: "jenkins-controller"
   image: "jenkins/jenkins"
-  tag: "latest-jdk11"
+  tag: "2.332.1-jdk11"
   tagLabel: jdk11
   imagePullPolicy: "IfNotPresent"
   imagePullSecretName:

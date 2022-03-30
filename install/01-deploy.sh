@@ -65,6 +65,7 @@ export K8S_HOST="$(kubectl exec -ti vault-0 -n vault -- printenv KUBERNETES_SERV
 export K8S_PORT=$(kubectl exec -ti vault-0 -n vault -- printenv KUBERNETES_SERVICE_PORT | tr -d '\r')
 
 # Write policy to be used from jenkins
+# This command need to be refactored
 kubectl exec -i vault-0 -n $VAULT_KNS -- vault policy write jenkins - <<EOF
 path "kv/data/cicd/*" { 
   capabilities = ["read", "update", "list"] 
@@ -85,6 +86,9 @@ path "terraform/creds/tfe-role" {
   capabilities = ["read", "update", "list"] 
 }
 path "aws/sts/jenkins-role" {
+    capabilities = ["read", "create", "list", "update"]
+}
+path "aws/sts/tekton-role" {
     capabilities = ["read", "create", "list", "update"]
 }
 path "auth/token/create" {
@@ -135,18 +139,6 @@ kubectl exec vault-0 -n $VAULT_KNS -- vault write terraform/role/tfe-role user_i
 
 # Enable the kv secrets engine at the kv/ path
 kubectl exec vault-0 -n $VAULT_KNS -- vault secrets enable -version 2 kv
-
-# Enable AWS secrets engine
-kubectl exec vault-0 -n $VAULT_KNS -- vault secrets enable aws
-
-# The IAM role need to be created before
-
-# Write AWS role will be used from Vault to generate dynamic creds
-kubectl exec vault-0 -n $VAULT_KNS -- vault write aws/roles/jenkins-role \
-role_arns=arn:aws:iam::711129375688:role/lbolli-vault-aws-secret-engine \
-credential_type=assumed_role
-
-# For test: kubectl exec vault-0 -n $VAULT_KNS -- vault write aws/sts/jenkins-role ttl=15m
 
 # Put static secrets starting from kv/ mount point
 cat $3 | kubectl exec vault-0 -n $VAULT_KNS -ti -- vault kv put kv/cicd -

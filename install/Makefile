@@ -14,7 +14,7 @@ endef
 all: install configure
 
 install:
-	./00-install.sh all $(CREDENTIALSFILE)
+	./00-install.sh jenkins $(CREDENTIALSFILE)
 
 configure:
 ifdef TFEORG
@@ -56,6 +56,14 @@ else
 	./00-install.sh jenkins
 endif
 
+awsauth:
+ifdef ROLEARN
+	./02-aws-auth-method.sh $(ROLEARN)
+else
+	@echo "No role arns are provided in the parameters (you'll need to provide them soon...)\n"
+	./02-aws-auth-method.sh
+endif
+
 tkrun:
 ifdef TFEWORK
 	kubectl apply -f ../tekton
@@ -67,7 +75,7 @@ else
 endif
 
 clean:
-	./02-clean.sh
+	./99-clean.sh
 
 help:
 	$(call usage)

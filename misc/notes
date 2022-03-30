@@ -16,6 +16,9 @@ kubectl get secrets -n <namespace_name>
 # How to view a secrets description
 kubectl describe secrets/<secrets_name> -n <namespace_name>
 
+# How to delete secret
+kubectl delete secret <secret_name> -n <namespace_name>
+
 # How to debug a pod execution
 kubectl describe pod <pod_name> -n <namespace_name>
 
