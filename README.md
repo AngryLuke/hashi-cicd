@@ -15,32 +15,34 @@ Example of Vault integration with CI/CD pipelines
 Install Vault and Jenkins without providing AWS credentials (in a json file):
 ```bash
 cd install
-make jenkins
+make install
 ```
+
+> NOTE:
+> *If you want to install every included CI/CD engine (Tekton Pipelines by now) after did a make install:*
+> ```bash
+> make tekton
+> ```
 
 The script will ask to you to provide AWS_ACCESS_KEY, AWS_SECRET_KEY and AWS_SESSION_TOKEN.
 The AWS_SESSION_TOKEN is mandatory for Vault aws secrets engine because it will be configured with the usage of
 sts-assume role.
 
-Install Vault and Jenkins providing AWS credentials (in a json file):
+Instead you can install Vault and Jenkins providing AWS credentials (in a json file):
 ```bash
 cp template/aws_credentials.json <path_you_prefer>
 ```
 Edit file and put on it all the AWS credentials needed (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_SESSION_TOKEN)
 ```
 cd install
-make jenkins <path_you_prefer>/aws_credentials.json
+make install CREDENTIALSFILE=<path_you_prefer>/aws_credentials.json
 ```
-
 The script is going to ask if you are using the righ K8s context. Press any key to continue or Crtl'C to cancel.
 
-> NOTE:
-> *If you want to install every included CI/CD engine (Tekton Pipelines by now):*
-> ```bash
-> make install
-> ```
+Now you can proceed on configure jenkins and vault.
 
-Copy the template file (secrets.json) in another folder and write your personal secrets: this new file will be the one you'll
+
+1. Copy the template file (secrets.json) in another folder and write your personal secrets: this new file will be the one you'll
 use in the next step.
 > ```bash
 > cp install/config/secrets.json <your_preferred_path>/<your_secrets_file>.json
@@ -56,7 +58,7 @@ Use the new static secrets file to create your own and apply your custom values:
 }
 ```
 
-Copy the template file (tfe_values.json) in another folder and write on it your TFC workspace variable: this new file will be the one you'll use in the next step.
+2. Copy the template file (tfe_values.json) in another folder and write on it your TFC workspace variable: this new file will be the one you'll use in the next step.
 
 ```json
 {
@@ -67,7 +69,7 @@ Copy the template file (tfe_values.json) in another folder and write on it your 
 }
 ```
 
-Configure Vault with the required secrets and Kubernetes auth:
+Configure Vault and Jenkins with the required secrets and Kubernetes auth:
 ```bash
 make configure TFEORG=<your_TFC_organization> TFEUSER=<your_TFC_user> SECRETSFILE=<your_preferred_path>/<your_secrets_file>.json
 ```
