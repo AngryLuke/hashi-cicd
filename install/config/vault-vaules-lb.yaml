@@ -1,0 +1,21 @@
+injector:
+  enabled: false
+server:
+  dev:
+    enabled: true
+  extraSecretEnvironmentVars:
+    - envName: AWS_ACCESS_KEY_ID
+      secretName: aws-creds
+      secretKey: AWS_ACCESS_KEY_ID
+    - envName: AWS_SECRET_ACCESS_KEY
+      secretName: aws-creds
+      secretKey: AWS_SECRET_ACCESS_KEY
+    - envName: AWS_SESSION_TOKEN
+      secretName: aws-creds
+      secretKey: AWS_SESSION_TOKEN
+# Vault UI
+ui:
+  enabled: true
+  serviceType: "LoadBalancer"
+  serviceNodePort: null
+  externalPort: 8200
