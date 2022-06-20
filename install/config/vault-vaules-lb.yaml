@@ -13,6 +13,10 @@ server:
     - envName: AWS_SESSION_TOKEN
       secretName: aws-creds
       secretKey: AWS_SESSION_TOKEN
+  serviceAccount:
+    create: true
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::711129375688:role/lbolli-eks-pod-vault"
 # Vault UI
 ui:
   enabled: true
