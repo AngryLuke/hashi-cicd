@@ -66,16 +66,18 @@ kubectl create secret generic aws-creds -n $VAULT_KNS \
 
 # Installing Vault in Development mode without the Vault Injector
 helm install vault -n $VAULT_KNS -f config/vault-vaules.yaml hashicorp/vault
+# to be fixed for install everything on AWS EKS
+# kubectl apply -f config/vault.yaml
 
 
 case "$1" in
   "jenkins")
     echo -e "\nInstalling Jenkins...\n"
-    install_jenkins 
+    install_jenkins
     ;;
   "tekton")
     echo -e "\nInstalling Tekton Pipelines...\n"
-    install_tekton 
+    install_tekton
     ;;
   "all")
     echo -e "\nInstalling Jenkins and Tekton Pipelines...\n"
@@ -86,4 +88,4 @@ case "$1" in
     echo -e "\nNo CI/CD to install. Maybe a manual install of your own?... \n"
     ;;
 esac
-  
+
